@@ -1,0 +1,424 @@
+<!-- PAINEL FINAL: LOGIN + PARTICLES + INTERFACE VERMELHA -->
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>@RELIX STORE 🍓 AUXÍLIO VIP</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #111;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      color: white;
+    }
+
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .login-form {
+      width: 300px;
+      margin: 120px auto;
+      padding: 20px;
+      background: #000000d0;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 20px #ff000055;
+    }
+
+    .login-form input {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 5px;
+      border: none;
+      background: #222;
+      color: white;
+    }
+
+    .login-btn {
+      background: #ff0000;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .login-btn:hover {
+      background: #cc0000;
+    }
+
+    .login-section {
+      display: none;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 400px;
+      margin: 100px auto;
+      background: linear-gradient(to bottom, #5a0000, #000);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 25px #ff000080;
+    }
+
+    h2 {
+      text-align: center;
+      color: #ff4c4c;
+      margin-bottom: 20px;
+    }
+
+    .menu-item {
+      background: #ff0000;
+      color: white;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 10px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .menu-item::before {
+      content: '►';
+      display: inline-block;
+      transition: transform 0.3s;
+    }
+
+    .menu-item.open::before {
+      transform: rotate(90deg);
+    }
+
+    .sub-options {
+      display: none;
+      padding-left: 15px;
+      margin-top: 5px;
+    }
+
+    .checkbox-label {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .checkbox-label input {
+      margin-right: 8px;
+      accent-color: #ff0000;
+    }
+
+    .command-prompt {
+      margin-top: 15px;
+      background: #1a1a1a;
+      border: 1px solid #ff0000;
+      border-radius: 6px;
+      padding: 10px;
+      max-height: 100px;
+      overflow-y: auto;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="particles-js"></div>
+
+  <div class="login-form" id="login-form">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Usuário" />
+    <input type="password" id="password" placeholder="Senha" />
+    <button class="login-btn" onclick="validateLogin()">Entrar</button>
+    <button class="login-btn" onclick="window.open('https://discord.gg/QKNrdw4FFv', '_blank')">Discod</button>
+    <p id="login-error" style="color:red; display:none;">Login inválido</p>
+  </div>
+
+  <div class="login-section" id="painel-relix">
+    <div class="container">
+      <h2>@RELIX STORE</h2>
+
+      <div class="menu-item" onclick="toggleOptions(this, 'trick-options')">Trick Functions</div>
+      <div class="sub-options" id="trick-options">
+        <label class="checkbox-label"><input type="checkbox" onchange="updatePrompt(this, 'TrickHead')">TrickHead</label>
+        <label class="checkbox-label"><input type="checkbox" onchange="updatePrompt(this, 'TrickLock')">TrickLock</label>
+        <label class="checkbox-label"><input type="checkbox" onchange="updatePrompt(this, 'AimbotTrick')">Aimbot Forte</label>
+      </div>
+
+      <div class="menu-item" onclick="toggleOptions(this, 'legit-options')">Auxílio Functions</div>
+      <div class="sub-options" id="legit-options">
+        <label class="checkbox-label"><input type="checkbox" onchange="updatePrompt(this, 'AuxilioRecuo')">Auxílio Recuo</label>
+        <label class="checkbox-label"><input type="checkbox" onchange="updatePrompt(this, 'AuxilioScope')">Auxílio Scope</label>
+        <label class="checkbox-label"><input type="checkbox" onchange="updatePrompt(this, 'AimFOV')">AimFOV</label>
+      </div>
+
+      <div class="menu-item" onclick="toggleOptions(this, 'extra-options')">Extra Tricks</div>
+      <div class="sub-options" id="extra-options">
+        <label class="checkbox-label"><input type="checkbox" onchange="updatePrompt(this, 'TrickSnap')">TrickSnap</label>
+        <label class="checkbox-label"><input type="checkbox" onchange="updatePrompt(this, 'TrickTrack')">TrickTrack</label>
+        <label class="checkbox-label"><input type="checkbox" onchange="updatePrompt(this, 'AimAssistX')">AimAssistX</label>
+        <label class="checkbox-label"><input type="checkbox" onchange="updatePrompt(this, 'AimAssistY')">AimAssistY</label>
+        <label class="checkbox-label"><input type="checkbox" onchange="updatePrompt(this, 'AntiShaking')">AntiShaking</label>
+      </div>
+
+      <div class="command-prompt" id="commandPrompt"></div>
+    </div>
+  </div>
+
+  <script>
+    const loopTimers = {};
+
+    function validateLogin() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      const error = document.getElementById('login-error');
+      if (user === 'auxiliorelixstore' && pass === '00') {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('painel-relix').style.display = 'block';
+      } else {
+        error.style.display = 'block';
+      }
+    }
+
+    function toggleOptions(el, id) {
+      const section = document.getElementById(id);
+      const open = section.style.display === 'block';
+      section.style.display = open ? 'none' : 'block';
+      el.classList.toggle('open', !open);
+    }
+
+    function updatePrompt(checkbox, modName) {
+      const prompt = document.getElementById('commandPrompt');
+      const status = checkbox.checked ? 'Ativado' : 'Desativado';
+      const color = checkbox.checked ? 'lightgreen' : 'lightcoral';
+      prompt.innerHTML += `<span style='color:${color}'>${modName} ${status}</span><br>`;
+      prompt.scrollTop = prompt.scrollHeight;
+      checkbox.checked ? startLoop(modName) : stopLoop(modName);
+    }
+
+    function startLoop(modName) {
+      if (loopTimers[modName]) return;
+      loopTimers[modName] = setInterval(() => {
+        console.log(`Executando ${modName}...`);
+      }, 1000);
+    }
+
+    function stopLoop(modName) {
+      clearInterval(loopTimers[modName]);
+      delete loopTimers[modName];
+    }
+  </script>
+  
+  <script>
+    const loopTimers = {};
+
+    function toggleOptions(element, id) {
+      const options = document.getElementById(id);
+      if (!options) return;
+      const isOpen = options.style.display === 'block';
+      options.style.display = isOpen ? 'none' : 'block';
+      element.classList.toggle('open', !isOpen);
+    }
+
+    function updatePrompt(checkbox, modName) {
+      const prompt = document.getElementById('commandPrompt');
+      let message = modName + (checkbox.checked ? " Ativado" : " Desativado");
+      const color = checkbox.checked ? 'lightgreen' : 'lightcoral';
+      prompt.innerHTML += '<span style="color: ' + color + ';">' + message + '</span><br>';
+      prompt.scrollTop = prompt.scrollHeight;
+
+      if (checkbox.checked) startLoop(modName);
+      else stopLoop(modName);
+    }
+
+    function startLoop(modName) {
+      if (loopTimers[modName]) return;
+      loopTimers[modName] = setInterval(() => {
+        if (modName === 'TrickHead') trickhead();
+        else if (modName === 'TrickLock') trickLock();
+        else if (modName === 'AimbotTrick') aimbotTrick();
+        else if (modName === 'AuxilioRecuo') auxilioRecuo();
+        else if (modName === 'AuxilioScope') auxilioScope();
+        else if (modName === 'AimFOV') aimfov();
+        else if (modName === 'TrickSnap') trickSnap();
+        else if (modName === 'TrickTrack') trickTrack();
+        else if (modName === 'AimAssistX') aimAssistX();
+        else if (modName === 'AimAssistY') aimAssistY();
+        else if (modName === 'AntiShaking') antiShaking();
+      }, 1000);
+    }
+
+    function stopLoop(modName) {
+      if (loopTimers[modName]) {
+        clearInterval(loopTimers[modName]);
+        delete loopTimers[modName];
+      }
+    }
+
+    function trickhead() {
+      console.log("Loop ativo: TrickHead executando...");
+      let miraY = 200;
+      let headY = 100;
+      let velocidade = 0.3;
+      let loop = setInterval(() => {
+        let ajuste = (headY - miraY) * velocidade;
+        miraY += ajuste;
+        console.log("Subindo mira para cabeça:", miraY.toFixed(2));
+        if (Math.abs(headY - miraY) < 1) clearInterval(loop);
+      }, 100);
+    }
+
+    function trickLock() {
+      console.log("Loop ativo: Trick Lock executando...");
+      let miraX = 50, inimigoX = 80, velocidade = 0.2;
+      let loop = setInterval(() => {
+        let ajuste = (inimigoX - miraX) * velocidade;
+        miraX += ajuste;
+        console.log("Ajustando lateral:", miraX.toFixed(2));
+        if (Math.abs(inimigoX - miraX) < 1) clearInterval(loop);
+      }, 100);
+    }
+
+    function aimbotTrick() {
+      console.log("Loop ativo: Aimbot executando...");
+      let miraX = 200, miraY = 40, inimigoX = 100, inimigoY = 80, velocidade = 0.55;
+      let loop = setInterval(() => {
+        miraX += (inimigoX - miraX) * velocidade;
+        miraY += (inimigoY - miraY) * velocidade;
+        console.log(`Aimbot mira: X=${miraX.toFixed(1)} Y=${miraY.toFixed(1)}`);
+        if (Math.abs(inimigoX - miraX) < 1 && Math.abs(inimigoY - miraY) < 1) clearInterval(loop);
+      }, 80);
+    }
+
+    function auxilioRecuo() {
+      console.log("Recuo ativo...");
+      let recuo = 0, intensidade = 1.5;
+      let loop = setInterval(() => {
+        recuo += intensidade;
+        console.log("Recuo:", recuo.toFixed(2));
+        if (recuo >= 15) clearInterval(loop);
+      }, 80);
+    }
+
+    function auxilioScope() {
+      console.log("Scope ativo...");
+      let mira = 90, alvo = 115, velocidade = 0.25;
+      let loop = setInterval(() => {
+        mira += (alvo - mira) * velocidade;
+        console.log("Scope mira:", mira.toFixed(2));
+        if (Math.abs(alvo - mira) < 0.5) clearInterval(loop);
+      }, 100);
+    }
+
+    function aimfov() {
+  console.log("AimFOV ativo...");
+  let miraX = 100, miraY = 100, inimigoX = 130, inimigoY = 85, vel = 0.3;
+  let passos = 0;
+  let loop = setInterval(() => {
+    if (passos >= 15) return clearInterval(loop);
+    miraX += (inimigoX - miraX) * vel;
+    miraY += (inimigoY - miraY) * vel;
+    console.log(`AimFOV mira: X=${miraX.toFixed(1)} Y=${miraY.toFixed(1)}`);
+    passos++;
+  }, 75);
+}
+
+    function trickSnap() {
+      console.log("Snap rápido ativado!");
+      let miraX = 120, miraY = 150;
+      let alvoX = 100, alvoY = 90;
+      miraX = alvoX;
+      miraY = alvoY;
+      console.log(`Snap feito: X=${miraX} | Y=${miraY}`);
+    }
+
+    function trickTrack() {
+      console.log("Rastreando alvo...");
+      let miraX = 160, alvoX = 100, velocidade = 0.15;
+      let loop = setInterval(() => {
+        miraX += (alvoX - miraX) * velocidade;
+        console.log(`Track mira X: ${miraX.toFixed(1)}`);
+        if (Math.abs(alvoX - miraX) < 1) clearInterval(loop);
+      }, 70);
+    }
+
+    function aimAssistX() {
+      console.log("Assist X ativado...");
+      let miraX = 2.05, alvoX = 80, vel = 88.08;
+      let loop = setInterval(() => {
+        miraX += (alvoX - miraX) * vel;
+        console.log(`X ajustando: ${miraX.toFixed(1)}`);
+        if (Math.abs(alvoX - miraX) < 1) clearInterval(loop);
+      }, 60);
+    }
+
+    function aimAssistY() {
+      console.log("Assist Y ativado...");
+      let miraY = 1.69, alvoY = 66.68, vel = 23050;
+      let loop = setInterval(() => {
+        miraY += (alvoY - miraY) * vel;
+        console.log(`Y ajustando: ${miraY.toFixed(1)}`);
+        if (Math.abs(alvoY - miraY) < 1) clearInterval(loop);
+      }, 60);
+    }
+
+    function antiShaking() {
+      console.log("AntiShaking ativado...");
+      let shakeX = [1, -1, 0.25, -0.25, 0];
+      let shakeY = [1, -1, 0.25, -0.25, 0];
+      let index = 0;
+      let loop = setInterval(() => {
+        let correçãoX = -shakeX[index];
+        let correçãoY = -shakeY[index];
+        console.log(`Corrigindo tremor: X=${correçãoX} | Y=${correçãoY}`);
+        index = (index + 1) % shakeX.length;
+        if (!loopTimers['AntiShaking']) clearInterval(loop);
+      }, 60);
+    }
+  </script>
+  <!-- Particles.js -->
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <script>
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 100, density: { enable: true, value_area: 800 } },
+        color: { value: "#ff0000" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5 },
+        size: { value: 5, random: true },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#ff0000",
+          opacity: 0.4,
+          width: 1
+        },
+        move: {
+          enable: true,
+          speed: 4,
+          direction: "none",
+          out_mode: "out"
+        }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: true, mode: "repulse" },
+          onclick: { enable: true, mode: "push" }
+        },
+        modes: {
+          repulse: { distance: 200 },
+          push: { particles_nb: 4 }
+        }
+      },
+      retina_detect: true
+    });
+  </script>
+</body>
+</html>
